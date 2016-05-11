@@ -25,9 +25,15 @@
     ref.orderByChild("timestamp").once("value", function(snapshot) {
       // var data = snapshot.val();
       // console.log(data);
+      var itemList = [];
       snapshot.forEach(function(data) {
         // console.log("The " + data.key() + " dinosaur's score is " + data.val());
         var item = data.val();
+        itemList.push(item);
+      });
+      itemList.reverse();
+
+      itemList.forEach(function(item) {
         var itemHtml = '';
         itemHtml += '<div style="margin: 5px 0">' + '<span style="font-weight: bold">' + item.word + '</span>' + '<span>' + item.strpho + '</span>' + '<span>' + item.basetrans + '</span>' + '</div>';
         itemHtml += '<div>' + item.sentence + '</div>';
@@ -35,7 +41,7 @@
         itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '</div>';
         itemHtml += '<hr>'
         document.getElementById('list').innerHTML += itemHtml;
-      });
+      })
       
     }, function (errorObject) {
       console.log("The read failed: " + errorObject.code);
