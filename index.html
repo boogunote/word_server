@@ -10,11 +10,39 @@
   <title>BooguMem</title>
   <meta name="description" content="">
   <script src="firebase.js"></script>
+  <!-- <script src="app.js"></script> -->
 </head>
 <body>
   <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
   <![endif]-->
-  sdfsdfsdf
+  <script type="text/javascript">
+    // Get a database reference to our posts
+    var ref = new Firebase("https://boogumem.firebaseio.com/");
+
+    // Attach an asynchronous callback to read the data at our posts reference
+    // ref.on("value", function(snapshot) {
+    ref.orderByChild("timestamp").once("value", function(snapshot) {
+      // var data = snapshot.val();
+      // console.log(data);
+      snapshot.forEach(function(data) {
+        // console.log("The " + data.key() + " dinosaur's score is " + data.val());
+        var item = data.val();
+        var itemHtml = '';
+        itemHtml += '<div style="margin: 5px 0">' + '<span style="font-weight: bold">' + item.word + '</span>' + '<span>' + item.strpho + '</span>' + '<span>' + item.basetrans + '</span>' + '</div>';
+        itemHtml += '<div>' + item.sentence + '</div>';
+        itemHtml += '<div>' + item.url + '</div>';
+        itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '</div>';
+        itemHtml += '<hr>'
+        document.getElementById('list').innerHTML += itemHtml;
+      });
+      
+    }, function (errorObject) {
+      console.log("The read failed: " + errorObject.code);
+    });
+    
+  </script>
+  <div id="list">
+  </div>
 </body>
 </html>
