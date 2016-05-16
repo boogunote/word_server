@@ -13,42 +13,75 @@
   <!-- <script src="app.js"></script> -->
 </head>
 <body>
+  <div id="list">
+  </div>
   <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
   <![endif]-->
   <script type="text/javascript">
-    // Get a database reference to our posts
+
     var ref = new Firebase("https://boogumem.firebaseio.com/");
 
-    // Attach an asynchronous callback to read the data at our posts reference
-    // ref.on("value", function(snapshot) {
-    ref.orderByChild("timestamp").once("value", function(snapshot) {
-      // var data = snapshot.val();
-      // console.log(data);
-      var itemList = [];
-      snapshot.forEach(function(data) {
-        // console.log("The " + data.key() + " dinosaur's score is " + data.val());
-        var item = data.val();
-        itemList.push(item);
-      });
-      itemList.reverse();
+    function login() {
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
 
-      itemList.forEach(function(item) {
-        var itemHtml = '';
-        itemHtml += '<div style="margin: 5px 0">' + '<span style="font-weight: bold">' + item.word + '</span>' + '<span>' + item.strpho + '</span>' + '<span>' + item.basetrans + '</span>' + '</div>';
-        itemHtml += '<div>' + item.sentence + '</div>';
-        itemHtml += '<div>' + item.url + '</div>';
-        itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '</div>';
-        itemHtml += '<hr>'
-        document.getElementById('list').innerHTML += itemHtml;
-      })
-      
-    }, function (errorObject) {
-      console.log("The read failed: " + errorObject.code);
-    });
+      ref.authWithPassword({
+        email    : username,
+        password : password
+      }, function(error, authData) {
+        loadItems();
+      }, {
+        remember: "sessionOnly"
+      });
+    }
+    function init(argument) {
+
+      var auth = ref.getAuth();
+      if (!auth) {
+        var loginHtml = 
+        '<input type="text" id="username" value="boogunote@gmail.com"></input>' +
+        '<input type="password" id="password"></input>' +
+        '<button onclick="login()">登陆</button>'
+        document.getElementById('list').innerHTML += loginHtml;
+
+        return;
+      }
+
+      loadItems();
+    }
+
+    function loadItems(argument) {
+      // Attach an asynchronous callback to read the data at our posts reference
+      // ref.on("value", function(snapshot) {
+      ref.child(ref.getAuth().uid).orderByChild("timestamp").once("value", function(snapshot) {
+        // var data = snapshot.val();
+        // console.log(data);
+        var itemList = [];
+        snapshot.forEach(function(data) {
+          // console.log("The " + data.key() + " dinosaur's score is " + data.val());
+          var item = data.val();
+          itemList.push(item);
+        });
+        itemList.reverse();
+        document.getElementById('list').innerHTML = '';
+
+        itemList.forEach(function(item) {
+          var itemHtml = '';
+          itemHtml += '<div style="margin: 5px 0">' + '<span style="font-weight: bold">' + item.word + '</span>' + '<span>' + item.strpho + '</span>' + '<span>' + item.basetrans + '</span>' + '</div>';
+          itemHtml += '<div>' + item.sentence + '</div>';
+          itemHtml += '<div>' + item.url + '</div>';
+          itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '</div>';
+          itemHtml += '<hr>'
+          document.getElementById('list').innerHTML += itemHtml;
+        })
+        
+      }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+      });
+    }
     
+    init();
   </script>
-  <div id="list">
-  </div>
 </body>
 </html>
