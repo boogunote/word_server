@@ -118,7 +118,7 @@
               '</span>' +
               '<button onclick="editTrans(\'' + item.key + '\',\'' + item.mytrans + '\')">修改</button>' +
             '</div>';
-          itemHtml += '<div>' + item.sentence + '</div>';
+          itemHtml += '<div>' + item.sentence.replace(item.word, '<strong>'+item.word+'</strong>') + '</div>';
           itemHtml += '<div>' + (!!item.title ? item.title : '') + ' <a href="' + item.url + '">' + item.url + '<a></div>';
           itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '<button onclick="removeItem(\'' + item.key + '\', \'' + item.word + '\')">删除</button></div>';
           itemHtml += '<hr>'
