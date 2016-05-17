@@ -35,6 +35,13 @@
         remember: "sessionOnly"
       });
     }
+
+    function update(snapshot) {
+      var changedPost = snapshot.val();
+      console.log(changedPost);
+      loadItems();
+    }
+
     function init(argument) {
 
       var auth = ref.getAuth();
@@ -47,8 +54,37 @@
 
         return;
       }
-
       loadItems();
+
+      ref.child(ref.getAuth().uid).on("child_added", update);
+      ref.child(ref.getAuth().uid).on("child_changed", update);
+      ref.child(ref.getAuth().uid).on("child_removed", update);
+    }
+
+    function editTrans(key, oldText) {
+      var newText = window.prompt(oldText)
+      if (null != newText) {
+        ref.child(ref.getAuth().uid).child(key).child('mytrans').set(newText, function () {
+          loadItems();
+        });
+      }
+    }
+
+    function removeItem(key, word) {
+      if (window.confirm("删除 '" + word + "' ？")) {
+        ref.child(ref.getAuth().uid).child(key).remove(function () {
+          // loadItems();
+        })
+      }
+    }
+
+    function addPho(key) {
+      var newText = window.prompt()
+      if (null != newText) {
+        ref.child(ref.getAuth().uid).child(key).child('strpho').set(newText, function () {
+          // loadItems();
+        });
+      }
     }
 
     function loadItems(argument) {
@@ -61,17 +97,30 @@
         snapshot.forEach(function(data) {
           // console.log("The " + data.key() + " dinosaur's score is " + data.val());
           var item = data.val();
+          item.key = data.key();
           itemList.push(item);
         });
         itemList.reverse();
         document.getElementById('list').innerHTML = '';
 
         itemList.forEach(function(item) {
+          item.strpho = item.strpho.trim();
           var itemHtml = '';
-          itemHtml += '<div style="margin: 5px 0">' + '<span style="font-weight: bold">' + item.word + '</span>' + '<span>' + item.strpho + '</span>' + '<span>' + item.basetrans + '</span>' + '</div>';
+          var hasMytrans = !!item.mytrans;
+          var hasWebtrans  = !!item.webtrans;
+          itemHtml +=
+            '<div style="margin: 5px 0">' +
+              '<a style="text-decoration: none; line-height: 1.25em; padding-right: 10px; font-weight: bold; font-size: 30px; color: #094; font-family: Verdana,Geneva,sans-serif;" href="http://dict.cn/' + item.word + '">' + item.word + '</a>' +
+              '<span style="font-size: 14px;">' + ('' != item.strpho ? item.strpho : '<button onclick="addPho(\'' + item.key + '\')">添加音标</button>') + '</span>' +
+              '<span style="font-size: 20px;">' +
+                '<span style="font-weight: bold; padding: 0 10px;">' + (hasMytrans ? item.mytrans : '') + '</span>' + 
+                '<span style="font-size: 9px">' + item.basetrans + ' ' + (hasWebtrans ? item.webtrans : '') + '</span>' +
+              '</span>' +
+              '<button onclick="editTrans(\'' + item.key + '\',\'' + item.mytrans + '\')">修改</button>' +
+            '</div>';
           itemHtml += '<div>' + item.sentence + '</div>';
-          itemHtml += '<div>' + item.url + '</div>';
-          itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '</div>';
+          itemHtml += '<div>' + (!!item.title ? item.title : '') + ' <a href="' + item.url + '">' + item.url + '<a></div>';
+          itemHtml += '<div>' + new Date(item.timestamp).toLocaleString() + '<button onclick="removeItem(\'' + item.key + '\', \'' + item.word + '\')">删除</button></div>';
           itemHtml += '<hr>'
           document.getElementById('list').innerHTML += itemHtml;
         })
